@@ -23,7 +23,15 @@ importing definitions from other modules.
 
 module Basics where
 
-import Test.HUnit -- library imports must come at the beginning
+-- library imports must come at the beginning
+import Test.HUnit
+  ( Counts,
+    Test (TestList),
+    runTestTT,
+    (~?),
+    (~?=),
+  )
+import Prelude hiding (const, sum, take)
 
 {-
 Observe that Haskell supports two kinds of comments: single line comments
@@ -103,14 +111,12 @@ Compare the value of a extra-large `Integer`
 -}
 
 -- >>> bigInteger
--- 12345678901234567890
 
 {-
 with an `Int`
 -}
 
 -- >>> bigInt
--- -6101065172474983726
 
 {-
 Above, we declared the type of an expression separately from giving it a
@@ -297,6 +303,101 @@ p1 :: Int
 p1 = 2 `plus` 2
 
 {-
+Laziness is a virtue
+--------------------
+
+One major difference between Haskell and other programming languages is that
+Haskell uses a "call-by-need" semantics for evaluation, aka "lazy" evaluation.
+What this means is that Haskell does not evaluate arguments before calling
+functions. Instead, expressions are only evaluated when they are needed.
+
+We can observe this behavior in Haskell by seeing what happens when we use
+`error` in a subexpresion. The `error` keyword in Haskell triggers a
+non-recoverable runtime exception, aborting any computation in progress.
+An `error` can be used in any context and can be given
+any type because it does not produce a value.
+If an error is triggered, then we know that subexpression was evaluated.
+
+For example, addition always needs to evaluate its arguments, so this
+error will trigger.
+-}
+
+-- >>> 1 + 2 + 3 + error "Here!"
+
+{-
+However, we won't trigger an error that is in dead code, such as in
+the non-selected part of an if-expression...
+-}
+
+-- >>> if 1 < 3 then 5 else error "Unreachable"
+-- 5
+
+{-
+..or that was short-circuited when evaluating a boolean expression.
+-}
+
+-- >>> True || error "Unreachable"
+-- True
+
+{-
+In contrast, you can see that if the first argument were `False` instead,
+it does not short circuit and does not trigger the error.
+-}
+
+-- >>> False || error "Ooops!"
+-- Ooops!
+
+{-
+In most languages, `if` and `||` are defined via special constructs because they
+include sub-expressions that are not always evaluated. However, in Haskell, these
+constructs are less special. For example, you can define your own short-circuiting
+version of the `or` operator. Suppose you would like this operator to be written
+with three pipes instead of two:
+-}
+
+(|||) :: Bool -> Bool -> Bool
+(|||) a b = if a then True else b
+
+{-
+Through laziness, this definition short circuits, just like the Prelude version of `||`.
+-}
+
+-- >>> True ||| error "Unreachable"
+-- True
+
+{-
+More generally, because Haskell is lazy, the language enables more abstraction.
+Functions and operators that we define can have nontrivial control behavior.
+
+Laziness is also the reason that we can reason about Haskell programs just by thinking
+about equalities. For example, there is a function in the Prelude with the following
+definition:
+-}
+
+const :: a -> b -> b
+const x y = y
+
+{-
+In a call-by-value language (i.e. most languages) if you see a subexpression like
+`const (f 3) 4`, you have to know whether the expression `f 3` produces a normal value
+first before you can know that the result is 4. However, in Haskell, you can use
+substitution: the pattern above says that with any call to `const`, the result is the value of
+the second argument.
+
+Thus:
+-}
+
+-- >>> const (error "Here!") 4
+-- 3
+
+{-
+We'll see more examples of laziness throughout the semester. Sometimes we use the word "strictness" to
+describe how functions use their arguments. If an argument will always be evaluated before the
+function is called, we call this argument "strict." For example, both arguments in an addition
+operation are strict, because we need to know what the numbers are to sum them together. However,
+only the first argument in `||` is strict because it does not evaluate the second argument when
+the value of the first one is `True`.
+
 Making Haskell DO something
 ===========================
 
@@ -516,8 +617,6 @@ To run the test case, we use the function `runTestTT`.
 numTest :: IO Counts
 numTest = runTestTT t1
 
--- >> numTest
-
 {-
 This expression is an action that runs the test case(s) and returns a data
 structure (of type `Counts`) recording how many tests cases were run and how
@@ -680,7 +779,6 @@ Extracting values from 'Maybe's
 
 Pattern Matching extracts values from maybes; we need a pattern for each
 case.
-
 -}
 
 pat'' :: Maybe Int -> Int
@@ -1052,38 +1150,38 @@ isGreeting3 s =
 Function practice: List Recursion
 ------------------------------
 
-**Example*: Define a function called `listAdd` that, given a list of `Int`s returns
+**Example*: Define a function called `listSum` that, given a list of `Int`s returns
 their sum.
 
 **Step 1**: Write test cases.
 -}
 
-listAddTests :: Test
-listAddTests =
+sumTests :: Test
+sumTests =
   TestList
-    [ listAdd [1, 2, 3] ~?= 6,
-      listAdd [] ~?= 0
+    [ sum [1, 2, 3] ~?= 6,
+      sum [] ~?= 0
     ]
 
 {-
 **Step 2**: Declare the type of the function.
 -}
 
-listAdd :: [Int] -> Int
+sum :: [Int] -> Int
 {-
 **Step 3**: Define the function. (Use pattern matching to define the function by
 case analysis.)
 -}
 
-listAdd [] = 0
-listAdd (x : xs) = x + listAdd xs
+sum [] = 0
+sum (x : xs) = x + sum xs
 
 {-
 **Step 4**: Run the tests.
 -}
 
-runLATests :: IO Counts
-runLATests = runTestTT listAddTests
+runSumTests :: IO Counts
+runSumTests = runTestTT sumTests
 
 {-
 Note that `listAdd` follows a general pattern of working with lists called *list
@@ -1103,6 +1201,45 @@ pattern of this definition:
     f (x : xs) = ...  -- case for a nonempty list, will use `f xs`
                       -- recursively somehow.
 
+Function practice: List access
+------------------------------
+
+Define a function, called `take`, that, given a number n and a list,
+returns the first n items in the list, or the whole list if there are
+fewer than n items.
+
+**Step 1**: Write test cases.
+-}
+
+takeTests :: Test
+takeTests =
+  TestList
+    [ take 1 [1, 2, 3] ~?= [1],
+      take 5 [1, 2, 3] ~?= [1, 2, 3]
+    ]
+
+{-
+**Step 2**: Declare the type of the function. This function
+is polymorphic and works with any element type.
+-}
+
+take :: Int -> [a] -> [a]
+{-
+**Step 3**: Define the function.
+-}
+
+take 0 xs = []
+take n [] = []
+take n (x : xs) = x : take (n - 1) xs
+
+{-
+**Step 4**: Run the tests.
+-}
+
+runTakeTests :: IO Counts
+runTakeTests = runTestTT takeTests
+
+{-
 Function practice: List transformation
 ------------------------------------
 
@@ -1138,6 +1275,145 @@ runLITests :: IO Counts
 runLITests = runTestTT listIncrTests
 
 {-
+Function practice: Double List transformation
+---------------------------------------------
+
+Define a function, called listAdd, that, given two lists of
+numbers, adds them together pointwise. Any extra numbers are ignored.
+
+**Step 1**: Write test cases.
+-}
+
+listAddTests :: Test
+listAddTests =
+  TestList
+    [ listIncr [1, 2, 3] ~?= [2, 3, 4],
+      listIncr [42] ~?= [43]
+    ]
+
+{-
+**Step 2**: Declare the type of the function.
+-}
+
+listAdd :: [Int] -> [Int] -> [Int]
+
+{-
+**Step 3**: Define the function.
+-}
+
+listIncr = undefined
+
+{-
+**Step 4**: Run the tests.
+-}
+
+runLAddTests :: IO Counts
+runLAddTests = runTestTT listAddTests
+
+{-
+Function practice: "Infinite" lists
+-----------------------------------
+
+The `:` operator is lazy in Haskell. When we create a list we don't need to
+know the value of all of the elements.
+-}
+
+-- >>> take 2 (1 : 2 : 3 : error "unreachable")
+-- [1,2]
+
+{-
+Because `:` is lazy, we can define lists in terms of themselves. This list
+has as many ones as you want it to contain.
+-}
+
+ones :: [Int]
+ones = 1 : ones
+
+{-
+Do NOT try to print this list.
+-}
+
+-- >>> ones
+
+{-
+But, we can work with any finite prefix of the list without trouble.
+-}
+
+-- >>> take 17 ones
+-- [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
+
+{-
+And, we can use this technique to define many different series of
+numbers. For example, we can define a simple incrementing series.
+-}
+
+allNums :: [Int]
+allNums = 1 : listIncr allNums
+
+-- >>> take 17 allNums
+-- [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17]
+
+{-
+And we can define the Fibonacci series.
+-}
+
+fibs :: [Int]
+fibs = 1 : 1 : listAdd fibs (tail fibs)
+
+-- >>> take 17 fibs
+-- [1,1,2,3,5,8,13,21,34,55,89,144,233,377,610,987,1597]
+
+{-
+How do you reason about definitions such as `fibs` above? The
+technique that we've seen above, replacing equal subterms by equal
+subterms works!
+
+```
+fibs = -- definition above
+      1 : 1 : listAdd fibs (tail fibs)
+       -- name a subexpression
+     = 1 : 1 : l1
+        where l1 = listAdd fibs (tail fibs)
+                    -- unfold definition of fibs (twice) to simplify this subexpression
+                 = listAdd (1 : 1 : listAdd fibs (tail fibs)) (tail (1 : 1 : listAdd fibs (tail fibs)))
+                    -- replace `tail` with its definition
+                 = listAdd (1 : 1 : listAdd fibs (tail fibs)) (1 : listAdd fibs (tail fibs))
+                    -- replate `listAdd` with its definition, in the case of nonempty lists
+                 = 1 + 1 : listAdd (1 : listAdd fibs (tail fibs)) (listAdd fibs (tail fibs))
+                    -- add numbers, replace subterms equivalent to l1
+                 = 2 : listAdd (1 : l1) l1
+       -- replace l1 with simpler version
+     = 1 : 1 : 2 : listAdd (1 : l1) l1
+       -- name a new subexpression
+     = 1 : 1 : 2 : l2
+        where l2 = listAdd (1 : l1) l1
+                    -- unfold definition of l1
+                 = listAdd (1 : l1) (2 : listAdd (1 : l1) l1)
+                    -- replace `listAdd` with its definition
+                 = 1 + 2 : listAdd l1 (listAdd (1 : l1) l1)
+                    -- add numbers, replace subterm equivalent to l2
+                 = 3 : listAdd l1 l2
+       -- replace l2 with simpler version
+     = 1 : 1 : 2 : 3 : listAdd l1 l2
+       -- name a subexpression, etc
+     = 1 : 1 : 2 : 3 : l3
+        where l3 = listAdd l1 l2
+                 = listAdd (2 : listAdd (1 : l1) l1) (3 : listAdd l1 l2)
+                 = 2 + 3 : listAdd (listAdd (1 : l1) l1) (listAdd l1 l2)
+                 = 5 : l2 + l3
+     = 1 : 1 : 2 : 3 : 5 : l2 + l3
+```
+
+In the equations above, we are only just replacing subterms by equal
+subterms. However, if we do this carefully, we can see what the values
+of the list will be, if we ever need them for some computation.
+
+More generally, because of laziness, our code is more modular. We have separated the
+generation of the sequence of numbers from deciding just how
+many of those numbers that we need. We don't compute all of the numbers
+when we define this series --- we only compute them as we need them. This is
+a powerful idea which will re-occur throughout the semester.
+
 ----------------------------------------------
 For Penn students: There is a quiz associated with this module on Canvas. Please complete this quiz before the next class.
 

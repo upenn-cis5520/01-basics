@@ -1,6 +1,7 @@
 {-
 ---
 fulltitle: Haskell Basics
+date: Wednesday, September 7, 2022
 ---
 
 Welcome to Haskell!
@@ -233,15 +234,15 @@ about that meaning using what we know about equality.
 
     { function call, replace a b & c in right-hand side of equation by 31 42 and 56 }
 
-    31 * (42 + 56)
+    == 31 * (42 + 56)
 
     { addition }
 
-    31 * 98
+    == 31 * 98
 
     { multiplication }
 
-    3038
+    == 3038
 
 Functions, like `pat`, are the core abstraction mechanisms in functional
 programming.
@@ -1372,36 +1373,36 @@ subterms works!
 fibs = -- definition above
       1 : 1 : listAdd fibs (tail fibs)
        -- name a subexpression
-     = 1 : 1 : l1
+     == 1 : 1 : l1
         where l1 = listAdd fibs (tail fibs)
                     -- unfold definition of fibs (twice) to simplify this subexpression
-                 = listAdd (1 : 1 : listAdd fibs (tail fibs)) (tail (1 : 1 : listAdd fibs (tail fibs)))
+                 == listAdd (1 : 1 : listAdd fibs (tail fibs)) (tail (1 : 1 : listAdd fibs (tail fibs)))
                     -- replace `tail` with its definition
-                 = listAdd (1 : 1 : listAdd fibs (tail fibs)) (1 : listAdd fibs (tail fibs))
+                 == listAdd (1 : 1 : listAdd fibs (tail fibs)) (1 : listAdd fibs (tail fibs))
                     -- replate `listAdd` with its definition, in the case of nonempty lists
-                 = 1 + 1 : listAdd (1 : listAdd fibs (tail fibs)) (listAdd fibs (tail fibs))
+                 == 1 + 1 : listAdd (1 : listAdd fibs (tail fibs)) (listAdd fibs (tail fibs))
                     -- add numbers, replace subterms equivalent to l1
-                 = 2 : listAdd (1 : l1) l1
+                 == 2 : listAdd (1 : l1) l1
        -- replace l1 with simpler version
-     = 1 : 1 : 2 : listAdd (1 : l1) l1
+     == 1 : 1 : 2 : listAdd (1 : l1) l1
        -- name a new subexpression
-     = 1 : 1 : 2 : l2
+     == 1 : 1 : 2 : l2
         where l2 = listAdd (1 : l1) l1
                     -- unfold definition of l1
-                 = listAdd (1 : l1) (2 : listAdd (1 : l1) l1)
+                 == listAdd (1 : l1) (2 : listAdd (1 : l1) l1)
                     -- replace `listAdd` with its definition
-                 = 1 + 2 : listAdd l1 (listAdd (1 : l1) l1)
+                 == 1 + 2 : listAdd l1 (listAdd (1 : l1) l1)
                     -- add numbers, replace subterm equivalent to l2
-                 = 3 : listAdd l1 l2
+                 == 3 : listAdd l1 l2
        -- replace l2 with simpler version
-     = 1 : 1 : 2 : 3 : listAdd l1 l2
+     == 1 : 1 : 2 : 3 : listAdd l1 l2
        -- name a subexpression, etc
-     = 1 : 1 : 2 : 3 : l3
+     == 1 : 1 : 2 : 3 : l3
         where l3 = listAdd l1 l2
-                 = listAdd (2 : listAdd (1 : l1) l1) (3 : listAdd l1 l2)
-                 = 2 + 3 : listAdd (listAdd (1 : l1) l1) (listAdd l1 l2)
-                 = 5 : l2 + l3
-     = 1 : 1 : 2 : 3 : 5 : l2 + l3
+                 == listAdd (2 : listAdd (1 : l1) l1) (3 : listAdd l1 l2)
+                 == 2 + 3 : listAdd (listAdd (1 : l1) l1) (listAdd l1 l2)
+                 == 5 : l2 + l3
+     == 1 : 1 : 2 : 3 : 5 : l2 + l3
 ```
 
 In the equations above, we are only just replacing subterms by equal

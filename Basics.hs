@@ -1,7 +1,7 @@
 {-
 ---
 fulltitle: Haskell Basics
-date: Wednesday, September 7, 2022
+date: September 7, 2022
 ---
 
 Welcome to Haskell!
@@ -11,7 +11,7 @@ If you are reading this text online, you may wish to access it as a Haskell
 project instead. You can find this module as part of the repository
 [01-basics](https://github.com/cis5520/01-basics) on github. We have prepared
 instructions on using
-[github with CIS 552](https://www.cis.upenn.edu/~cis5520/current/version.html)
+[github with CIS 5520](https://www.cis.upenn.edu/~cis5520/current/version.html)
 and with installing
 [GHC and VSCode](https://www.cis.upenn.edu/~cis5520/current/haskell-vscode.html).
 We strongly encourage you to read this file in the VSCode editor so that you

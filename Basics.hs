@@ -1279,7 +1279,7 @@ runLITests = runTestTT listIncrTests
 Function practice: Double List transformation
 ---------------------------------------------
 
-Define a function, called listAdd, that, given two lists of
+Define a function, called `listAdd`, that, given two lists of
 numbers, adds them together pointwise. Any extra numbers are ignored.
 
 **Step 1**: Write test cases.
@@ -1288,8 +1288,8 @@ numbers, adds them together pointwise. Any extra numbers are ignored.
 listAddTests :: Test
 listAddTests =
   TestList
-    [ listIncr [1, 2, 3] ~?= [2, 3, 4],
-      listIncr [42] ~?= [43]
+    [ listAdd [1, 2, 3] [2, 4, 5] ~?= [3, 6, 8],
+      listAdd [42] [] ~?= []
     ]
 
 {-
@@ -1297,12 +1297,11 @@ listAddTests =
 -}
 
 listAdd :: [Int] -> [Int] -> [Int]
-
 {-
 **Step 3**: Define the function.
 -}
 
-listIncr = undefined
+listAdd = undefined
 
 {-
 **Step 4**: Run the tests.
@@ -1310,6 +1309,9 @@ listIncr = undefined
 
 runLAddTests :: IO Counts
 runLAddTests = runTestTT listAddTests
+
+-- >>> runLAddTests
+-- Counts {cases = 2, tried = 2, errors = 0, failures = 0}
 
 {-
 Function practice: "Infinite" lists

@@ -19,55 +19,8 @@ library
                        , containers
   ghc-options:         -Wno-type-defaults -fwarn-incomplete-patterns
   default-language:
-    Haskell2010
-  -- these extensions are enabled for GHC2021, turning them on now for 
-  -- future compatibility
+    GHC2021
   default-extensions:
-    BangPatterns
-    BinaryLiterals
-    ConstrainedClassMethods
-    ConstraintKinds
-    DeriveDataTypeable
-    DeriveFoldable
-    DeriveFunctor
-    DeriveGeneric
-    DeriveLift
-    DeriveTraversable
-    DoAndIfThenElse
-    EmptyCase
-    EmptyDataDecls
-    EmptyDataDeriving
-    ExistentialQuantification
-    ExplicitForAll
-    FlexibleContexts
-    FlexibleInstances
-    ForeignFunctionInterface
-    GADTSyntax
-    GeneralisedNewtypeDeriving
-    HexFloatLiterals
-    ImplicitPrelude
-    ImportQualifiedPost
-    InstanceSigs
-    KindSignatures
-    MonomorphismRestriction
-    MultiParamTypeClasses
-    NamedFieldPuns
-    NamedWildCards
-    NumericUnderscores
-    PatternGuards
-    PolyKinds
-    PostfixOperators
-    RankNTypes
-    RelaxedPolyRec
-    ScopedTypeVariables
-    StandaloneDeriving
-    StandaloneKindSignatures
-    StarIsType
-    TraditionalRecordSyntax
-    TupleSections
-    TypeApplications
-    TypeOperators
-    TypeSynonymInstances
-
+    
   
 

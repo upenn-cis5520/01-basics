@@ -1,7 +1,7 @@
 {-
 ---
 fulltitle: Haskell Basics
-date: September 7, 2022
+date: September 6, 2023
 ---
 
 Welcome to Haskell!
@@ -17,14 +17,19 @@ and with installing
 We strongly encourage you to read this file in the VSCode editor so that you
 can experiment with it.
 
-Every Haskell file begins with a few lines naming the module (this name must
-start with a capital letter and be the same as the file name) and (optionally)
-importing definitions from other modules.
+This file provides an introduction to the basics of the Haskell language. It explains
+the components of the language through examples and provides exercises for you
+to test your understanding.
+
+First, every Haskell file begins with the name of the module (this name must
+start with a capital letter and be the same as the file name, without the `.hs`).
+After that, the next lines specify definitions that are imported from other modules.
+These import lines must be at the beginning of the file, before any other definitions.
 -}
 
 module Basics where
 
--- library imports must come at the beginning
+-- library imports must come at the beginning of the module
 import Test.HUnit
   ( Counts,
     Test (TestList),
@@ -32,7 +37,7 @@ import Test.HUnit
     (~?),
     (~?=),
   )
-import Prelude hiding (const, sum, take)
+import Prelude hiding (const, or, sum, tail, take)
 
 {-
 Observe that Haskell supports two kinds of comments: single line comments
@@ -42,54 +47,82 @@ respectively.
 Understanding a Haskell program is about equality
 -------------------------------------------------
 
-*Functional* programming means that the semantics of a program can be
-described mathematically. One principle of mathematics is called Leibniz
-equality: in any context, we can replace an object with anything equivalent
-to it.  Therefore, in Haskell, we reason about computation by reasoning about
-*equality* of (sub-)expressions.
+Our goal in this class is not just for you to be able to write programs. We
+also want you to be able to reason about them abstractly, so that you understand
+exactly what they mean.
+
+Haskell is a function programming language, and *functional* programming means
+that the semantics of a program can be described by mathematically.
+One principle of mathematics is called Leibniz equality: in any context, we
+can replace an object with anything equivalent to it.  Therefore, in Haskell,
+we reason about computation by reasoning about *equality* of sub-expressions.
 
 For example, if we want to know what value an arithmetic expression computes
 to, we only need to find some number that is equal to it.
 
     3 * (4 + 5)
 
-    { 4+5 is equal to 9 by addition, so we can replace it in the expression }
+    { 4+5 is equal to 9 by addition }
 
-    3 * 9
+    == 3 * 9
 
     { by multiplication }
 
-    27
+    == 27
 
 That's it!
 
 Furthermore, we can ask VSCode to compute the value of an expression for us with a
 special form of comment (i.e. a single line comment that starts with '>>>').
 
-Try clicking on "Evaluate..." below.
+Try clicking on "Evaluate..." below. (You will only see "Evaluate..." if your IDE is
+set up correctly.)
 -}
 
 -- >>> 3 * (4 + 5)
 
 {-
+This sort of reasoning isn't so surprising so far. We can do the same thing in
+almost any other language too. What makes Haskell different is that we will be able
+to use this equational reasoning in more contexts than just arithmetic.
+
+A Haskell module is a list of definitions
+-----------------------------------------
+
 A Haskell module (like this one) is a list of *definitions*. These definitions
-allow us to give names to Haskell expressions.
+allow us to give names to Haskell expressions. In a module, all of the definitions
+must have unique names. If we try to add another definition of `ex`, we will get
+an error.
 -}
 
 ex :: Integer
 ex = 3 * (4 + 5)
 
 {-
-We can ask VSCode to calculate these values, just as we did above.
+We can ask VSCode to calculate with these names, just as we did above.
 -}
 
 -- >>> ex
 
 {-
+Haskell definitions do not need to be in order. In a definition for one name, we
+we can use any other name in the module, even if it appears later in the file.
+-}
+
+ey :: Integer
+ey = ex + ez -- refers to `ex` above and `ez` below.
+
+ez :: Integer
+ez = ex + 200
+
+-- >>> ey
+
+{-
 Whenever we give a name to an expression, it is a good idea to also write down
-its type. Although Haskell can often figure out this type for you, when you
-are just starting out, the error messages can be perplexing without these
-additional hints.
+its type, as we have done so for `ex` above. VSCode can often figure
+out this type for you and will suggest that you add it to your file by clicking
+on the suggestion. You should do so---as later error messages can be perplexing
+without these additional hints.
 
 The `Integer` type is the type of arbitrarily large integers in Haskell.
 -}
@@ -166,7 +199,7 @@ Furthermore, you'll also find characters, strings and boolean values.
 
 -- >>> "abcd" :: String            -- strings
 
--- >>> "cis" ++ "552"              -- string concatenation
+-- >>> "cis" ++ "5520"             -- string concatenation
 
 -- >>> True :: Bool                -- boolean values
 
@@ -184,13 +217,21 @@ expressions.
 Now the last basic type, shown below, is subtle. It is a special constant,
 written `()` and called "unit". The type of this constant is written with the
 same notation, and also called "unit". You'll need to pay attention to
-context to know whether we mean the constant or the type. The key fact about
-this basic type is that there is only *one* value with type `()`.
+context to know whether we mean the value or the type. The key fact about
+this basic type is that there is only *one* value with type `()`. As a result,
+we sometimes say that this type is "trivial" --- if we know that a variable has
+type `()`, then we know that its value (if it has one) must be equal to `()`.
 -}
 
 -- >>> () :: ()            -- 'unit' (both value and type have the same syntax)
 
 {-
+What is the point of a trivial type? In Haskell, every function is a mathematical function,
+so must return some value. However, sometimes there isn't anything interesting to return, so the
+function returns `()`. This is similar to the "void" type in other languages.
+
+We'll have more to say about unit later.
+
 What is Abstraction?
 --------------------
 
@@ -230,13 +271,14 @@ The important question is not "What does this function do?"
 but, instead "What does this function mean?" We can reason
 about that meaning using what we know about equality.
 
-    pat 31 42 56
+    pat (30 + 1) 42 56
 
-    { function call, replace a b & c in right-hand side of equation by 31 42 and 56 }
+    { function call, replace a b & c in right-hand side of
+    equation by (30 + 1) 42 and 56 }
 
-    == 31 * (42 + 56)
+    == (30 + 1) * (42 + 56)
 
-    { addition }
+    { addition (twice) }
 
     == 31 * 98
 
@@ -246,6 +288,14 @@ about that meaning using what we know about equality.
 
 Functions, like `pat`, are the core abstraction mechanisms in functional
 programming.
+
+There was something subtle about the example above: we put the expression
+`(30 + 1)` in for `a` in the body of `pat`. When reasoning in most languages,
+it is only sound to do this replacement using values (like 31) instead general
+expressions, like `(30 + 1)`. Haskell, supports more flexible
+reasoning. We could have also replaced `(30 + 1)` with `31` in the first step above,
+before using the equation for the function call, and we would have gotten
+the same result.
 
 Function types
 --------------
@@ -304,6 +354,19 @@ p1 :: Int
 p1 = 2 `plus` 2
 
 {-
+We can also define new symbolic infix identifiers. For example,
+the `>+` operator below is just like `+`, but it adds one to the result.
+When giving its type, we put it in parentheses to refer to it outside of
+an infix context. However, in its definition, we put the parameters `x` and `y`
+on either side of the operator.
+-}
+
+(>+) :: Int -> Int -> Int
+x >+ y = x + y + 1
+
+-- >>> 2 >+ 3
+
+{-
 Laziness is a virtue
 --------------------
 
@@ -314,7 +377,9 @@ functions. Instead, expressions are only evaluated when they are needed.
 
 We can observe this behavior in Haskell by seeing what happens when we use
 `error` in a subexpresion. The `error` keyword in Haskell triggers a
-non-recoverable runtime exception, aborting any computation in progress.
+*non-recoverable* runtime exception, aborting any computation in progress.
+It is not a good idea to use `error` in production code, but it is convenient
+for incremental development and for learning about how Haskell evaluation works.
 An `error` can be used in any context and can be given
 any type because it does not produce a value.
 If an error is triggered, then we know that subexpression was evaluated.
@@ -331,40 +396,36 @@ the non-selected part of an if-expression...
 -}
 
 -- >>> if 1 < 3 then 5 else error "Unreachable"
--- 5
 
 {-
 ..or that was short-circuited when evaluating a boolean expression.
 -}
 
 -- >>> True || error "Unreachable"
--- True
 
 {-
 In contrast, you can see that if the first argument were `False` instead,
-it does not short circuit and does not trigger the error.
+it does not short circuit and does trigger the error.
 -}
 
 -- >>> False || error "Ooops!"
--- Ooops!
 
 {-
 In most languages, `if` and `||` are defined via special constructs because they
 include sub-expressions that are not always evaluated. However, in Haskell, these
 constructs are less special. For example, you can define your own short-circuiting
-version of the `or` operator. Suppose you would like this operator to be written
-with three pipes instead of two:
+version of the `or` operator. Suppose you would like this operator to have a textual
+name instead of (infix) symbols:
 -}
 
-(|||) :: Bool -> Bool -> Bool
-(|||) a b = if a then True else b
+or :: Bool -> Bool -> Bool
+or a b = if a then True else b
 
 {-
 Through laziness, this definition short circuits, just like the Prelude version of `||`.
 -}
 
--- >>> True ||| error "Unreachable"
--- True
+-- >>> or True (error "Unreachable")
 
 {-
 More generally, because Haskell is lazy, the language enables more abstraction.
@@ -379,7 +440,7 @@ const :: a -> b -> b
 const x y = y
 
 {-
-In a call-by-value language (i.e. most languages) if you see a subexpression like
+In most languages if you see a subexpression like
 `const (f 3) 4`, you have to know whether the expression `f 3` produces a normal value
 first before you can know that the result is 4. However, in Haskell, you can use
 substitution: the pattern above says that with any call to `const`, the result is the value of
@@ -389,15 +450,17 @@ Thus:
 -}
 
 -- >>> const (error "Here!") 4
--- 3
 
 {-
-We'll see more examples of laziness throughout the semester. Sometimes we use the word "strictness" to
-describe how functions use their arguments. If an argument will always be evaluated before the
-function is called, we call this argument "strict." For example, both arguments in an addition
-operation are strict, because we need to know what the numbers are to sum them together. However,
-only the first argument in `||` is strict because it does not evaluate the second argument when
-the value of the first one is `True`.
+Laziness is unique to Haskell, and we'll see more examples of it throughout the semester.
+Sometimes we use the word "strictness" to contrast with laziness. If an argument will
+always be evaluated before the function is called, we call this argument "strict." In most
+languages all functions are strict.
+
+However, in Haskell, functions can be either lazy or strict, and lazy is the default.
+For example, both arguments in an addition operation are strict, because we need to know what
+the numbers are to sum them together. However, only the first argument in `||` is strict
+because it does not evaluate the second argument when the value of the first one is `True`.
 
 Making Haskell DO something
 ===========================
@@ -434,13 +497,13 @@ First use the terminal to start `ghci` and instruct it to load the `Basics`
 module.
 
     sweirich@sixteen 01-basics % stack ghci Basics.hs
-    Using configuration for cis5520-basics:lib to load /Users/sweirich/552/cis5520-20fa/lectures/01-basics/Basics.lhs
+    Using configuration for cis5520-basics:lib to load /Users/sweirich/552/cis5520-23fa/lectures/01-basics/Basics.lhs
     cis5520-basics> configure (lib)
     Configuring cis5520-basics-0.1.0.0...
     cis5520-basics> initial-build-steps (lib)
     Configuring GHCi with the following packages: cis5520-basics
-    GHCi, version 8.8.3: https://www.haskell.org/ghc/  :? for help
-    [1 of 1] Compiling Basics           ( /Users/sweirich/5520/cis5520-22fa/lectures/01-basics/Basics.lhs, interpreted )
+    GHCi, version 9.2.5: https://www.haskell.org/ghc/  :? for help
+    [1 of 1] Compiling Basics           ( /Users/sweirich/5520/cis5520-23fa/lectures/01-basics/Basics.lhs, interpreted )
     Ok, one module loaded.
     Loaded GHCi configuration from /private/var/folders/p3/pkythxvx6rq9q054797y4bb80000gn/T/haskell-stack-ghci/48e82592/ghci-script
     *Basics>
@@ -531,37 +594,39 @@ Actions can also return a value.
     getLine :: IO String
 
 This action reads and returns a line from stdin.  We can name the result
-as part of a `do` sequence, with this notation
+as part of a `do` sequence, with this notation, called "bind".
 
     x <- action
 
 Here `x` is a variable that can be used to refer to the result of the
-action in later code.
+action in later code. For example, below, `n` is new `String` variable
+that is initialized by reading from stdin.
 -}
 
 query :: IO ()
 query = do
   putStr "What is your name? "
   n <- getLine
-  let y :: String
-      y = "Welcome to CIS 552 " ++ n
-  putStrLn y
+  putStrLn ("Welcome to CIS 5520 " ++ n)
 
 {-
-When we sequence actions of type `IO ()` there is no need to name the
-result. These actions do not return anything interesting. We could name the
-result if we wanted (such as `_m` below); but because of its type we know
-that `_m` will always be a special value, written `()` and called "unit". By
-convention, the name of an unused variable starts with an underscore.
+Any `IO t` action can be used with bind to create a variable of type `t`.
+However, when working with type `IO ()` the result is a special value,
+written `()` and called "unit". This special value indicates that the IO
+action did not have anything interesting to return---similar to a method
+that returns "void" in other programming languages.
+What is different in Haskell is that we do have a value of type `()`,
+and we can name it with bind, as shown in `query'` below. However, we probably
+won't do anything with this value.
+(Note that this example also demonstrates the Haskell convention to name
+variables that are unused with names that start with an underscore.)
 -}
 
 query' :: IO ()
 query' = do
   _m <- putStr "What is your name? "
   n <- getLine
-  putStrLn ("Welcome to CIS 552 " ++ n)
-  _st <- query2
-  return ()
+  putStrLn ("Welcome to CIS 5520 " ++ n)
 
 {-
 Note that you cannot name the *last* action in a sequence. Names are there so that
@@ -577,7 +642,7 @@ query2 = do
 
 {-
 Furthermore, there is no need to name a value if it is just going to be
-returned right away. This version is equivalent.
+returned right away. This version is also equivalent.
 -}
 
 query2' :: IO String
@@ -601,8 +666,8 @@ t1 = (1 + 2 :: Int) ~?= 3
 -- check that the result of the computation matches the expected value `3`
 
 {-
-* Haskell is lazy, so these definitions *create* tests, but don't actually run
-them yet. We'll do that below.
+* Haskell is lazy by default, so these definitions *create* tests, but don't
+actually run them yet. We'll do that below.
 
 * The `(~?=)` operator is overloaded. You can create tests that compare
 expressions at many different types. When the expressions themselves are also
@@ -667,8 +732,7 @@ tup3 = ((7, 5.2), True)
 
 {-
 There can be any number of elements in a tuple, but the structure must match
-the type.  (Actually, the compiler won't let you construct a tuple with more
-than 62 values, but it would be bad style to do so anyways.)
+the type.
 
 *Pattern Matching* extracts values from tuples.
 
@@ -773,12 +837,34 @@ m2 :: Maybe Int
 m2 = Nothing -- the 'Nothing' tag means there is no value
 
 {-
-There is no 'null' in Haskell. Yay!
+The `Nothing` value of the `Maybe` type often plays the role that `null` does
+in other languages. But note that `Nothing` is not a value of type `Int` or
+`String` or any other type. It is a value of type `Maybe Int`. This means that
+we can't accidentally use `Nothing` where we need an `Int`. This is a good
+thing, because it means that we can't be surprised by `null` --- the types tell
+us exactly when a value could be `Nothing`.
 
+'Maybe' is useful for partial functions
+---------------------------------------
+
+A common use of the `Maybe` type is for functions that don't always have a value
+to return. For example, suppose we know the location of some, but not all, classes
+in the CIS department. For the ones that we have no information about, we can
+return `Nothing`.
+-}
+
+location :: String -> Maybe String
+location "cis5010" = Just "Wu & Chen"
+location "cis5020" = Just "Heilmeier"
+location "cis5200" = Just "Wu & Chen"
+location "cis5520" = Just "3401 Walnut, 401B"
+location _ = Nothing -- wildcard pattern, matches anything
+
+{-
 Extracting values from 'Maybe's
 --------------------------------
 
-Pattern Matching extracts values from maybes; we need a pattern for each
+Pattern matching extracts values from `Maybe`s; we need a pattern for each
 case.
 -}
 
@@ -803,18 +889,6 @@ error if it is ever evaluated.
 
 jn' :: Maybe (Maybe a) -> Maybe a
 jn' = undefined
-
-{-
-'Maybe' is useful for partial functions
----------------------------------------
--}
-
-location :: String -> Maybe String
-location "cis501" = Just "Wu & Chen"
-location "cis502" = Just "Heilmeier"
-location "cis520" = Just "Wu & Chen"
-location "cis5520" = Just "3401 Walnut, 401B"
-location _ = Nothing -- wildcard pattern, matches anything
 
 {-
 Lists
@@ -870,7 +944,7 @@ l6 = []
 -}
 
 l7 :: String
-l7 = ['h', 'e', 'l', 'l', 'o', ' ', '5', '5', '2', '!']
+l7 = ['h', 'e', 'l', 'l', 'o', ' ', '5', '5', '2', '0', '!']
 
 {-
 What is the value of l7?
@@ -1343,7 +1417,6 @@ But, we can work with any finite prefix of the list without trouble.
 -}
 
 -- >>> take 17 ones
--- [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
 
 {-
 And, we can use this technique to define many different series of
@@ -1354,11 +1427,17 @@ allNums :: [Int]
 allNums = 1 : listIncr allNums
 
 -- >>> take 17 allNums
--- [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17]
 
 {-
-And we can define the Fibonacci series.
+And we can define the Fibonacci series. (The `tail` function below
+is also defined in the Haskell standard library and returns the list without
+its first element.)
+
 -}
+
+tail :: [Int] -> [Int]
+tail (_ : xs) = xs
+tail [] = error "tail of empty list"
 
 fibs :: [Int]
 fibs = 1 : 1 : listAdd fibs (tail fibs)
@@ -1381,7 +1460,7 @@ fibs = -- definition above
                  == listAdd (1 : 1 : listAdd fibs (tail fibs)) (tail (1 : 1 : listAdd fibs (tail fibs)))
                     -- replace `tail` with its definition
                  == listAdd (1 : 1 : listAdd fibs (tail fibs)) (1 : listAdd fibs (tail fibs))
-                    -- replate `listAdd` with its definition, in the case of nonempty lists
+                    -- replace `listAdd` with its definition, in the case of nonempty lists
                  == 1 + 1 : listAdd (1 : listAdd fibs (tail fibs)) (listAdd fibs (tail fibs))
                     -- add numbers, replace subterms equivalent to l1
                  == 2 : listAdd (1 : l1) l1

@@ -1431,7 +1431,9 @@ allNums = 1 : listIncr allNums
 {-
 And we can define the Fibonacci series. (The `tail` function below
 is also defined in the Haskell standard library and returns the list without
-its first element.)
+its first element. Note: in general you should avoid this function when
+working with finite lists as it could trigger an error. In some projects,
+we have configured `hlint` to warn you about this function.)
 
 -}
 

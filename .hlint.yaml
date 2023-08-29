@@ -2,7 +2,6 @@
 
 - functions:
   - {name: head, within: []}
-  - {name: tail, within: []}
   - {name: (!!), within: []}
   - {name: read, within: []}
   - {name: maximum, within: []}
@@ -53,3 +52,4 @@
 - ignore: {name: "Use sum"}
 - ignore: {name: "Use tuple-section"}
 - ignore: {name: "Unused LANGUAGE pragma"}
+- ignore: {name: "Redundant if"}

@@ -7,7 +7,6 @@ bug-reports:         cis5520@seas.upenn.edu
 license:             MIT
 license-file:        LICENSE
 maintainer:          sweirich@seas.upenn.edu
--- copyright:
 build-type:          Simple
 extra-source-files:  CHANGELOG.md
 
@@ -21,6 +20,14 @@ library
   default-language:
     GHC2021
   default-extensions:
-    
+    -- GHC2024
+    DataKinds
+    DerivingStrategies
+    DisambiguateRecordFields
+    ExplicitNamespaces
+    GADTs
+    MonoLocalBinds
+    LambdaCase
+    RoleAnnotations    
   
 

@@ -1,28 +1,29 @@
 {-
 ---
 fulltitle: Haskell Basics
-date: September 6, 2023
+date: September 4, 2024
 ---
 
 Welcome to Haskell!
 -------------------
 
-If you are reading this text online, you may wish to access it as a Haskell
-project instead. You can find this module as part of the repository
+This material is available in two formats: both
+[online](https://www.cis.upenn.edu/~cis5520/current/stub/01-basics/Basics.html),
+and embedded in the comments of a Haskell module in the repository
 [01-basics](https://github.com/upenn-cis5520/01-basics) on github. We have prepared
 instructions on using
 [github with CIS 5520](https://www.cis.upenn.edu/~cis5520/current/version.html)
 and with installing
 [GHC and VSCode](https://www.cis.upenn.edu/~cis5520/current/haskell-vscode.html).
-We strongly encourage you to read this file in the VSCode editor so that you
+We strongly encourage you to read this module using the VSCode editor so that you
 can experiment with it.
 
-This file provides an introduction to the basics of the Haskell language. It explains
-the components of the language through examples and provides exercises for you
+This module is an introduction to the basics of the Haskell language. It explains
+the components of the language through examples and provides exercises
 to test your understanding.
 
 First, every Haskell file begins with the name of the module (this name must
-start with a capital letter and be the same as the file name, without the `.hs`).
+start with a capital letter and be the same as the name of the file, without the `.hs`).
 After that, the next lines specify definitions that are imported from other modules.
 These import lines must be at the beginning of the file, before any other definitions.
 -}
@@ -30,6 +31,7 @@ These import lines must be at the beginning of the file, before any other defini
 module Basics where
 
 -- library imports must come at the beginning of the module
+-- these come from the HUnit library for unit testing
 import Test.HUnit
   ( Counts,
     Test (TestList),
@@ -40,22 +42,24 @@ import Test.HUnit
 import Prelude hiding (const, or, sum, tail, take)
 
 {-
-Observe that Haskell supports two kinds of comments: single line comments
-start with `--` and block comments begin and end with `{-` and `-}`
-respectively.
+Haskell supports two kinds of comments: single line comments start with `--`
+and block comments that begin and end with `{-` and `-}` respectively.
 
-Understanding a Haskell program is about equality
--------------------------------------------------
+What does it mean to understand a Haskell program?
+--------------------------------------------------
 
 Our goal in this class is not just for you to be able to write programs. We
-also want you to be able to reason about them abstractly, so that you understand
-exactly what they mean.
+also want you to be able to reason about them both precisely and abstractly,
+so that you understand exactly what they mean.
 
-Haskell is a function programming language, and *functional* programming means
-that the semantics of a program can be described by mathematically.
-One principle of mathematics is called Leibniz equality: in any context, we
-can replace an object with anything equivalent to it.  Therefore, in Haskell,
-we reason about computation by reasoning about *equality* of sub-expressions.
+We can do this because Haskell is a functional programming language, and
+\*functional* programming means that the semantics of a program can be described
+mathematically. One principle of mathematics *Leibniz* equality: in any context, we
+can replace any object with anything that is equal to it. In other words, if
+we know that some property `P` is true about some object `A`, and `A` is equal
+to `B`, then we know that the property `P` *also* holds for `B`.
+
+Therefore, in Haskell, we reason about computation by reasoning about *equality* of sub-expressions.
 
 For example, if we want to know what value an arithmetic expression computes
 to, we only need to find some number that is equal to it.
@@ -74,16 +78,15 @@ That's it!
 
 Furthermore, we can ask VSCode to compute the value of an expression for us with a
 special form of comment (i.e. a single line comment that starts with '>>>').
-
-Try clicking on "Evaluate..." below. (You will only see "Evaluate..." if your IDE is
-set up correctly.)
+If you are working in VSCode, try clicking on "Evaluate..." below. (You will only
+see "Evaluate..." if your IDE is set up correctly.)
 -}
 
 -- >>> 3 * (4 + 5)
 
 {-
 This sort of reasoning isn't so surprising so far. We can do the same thing in
-almost any other language too. What makes Haskell different is that we will be able
+almost any other language. What makes Haskell different is that we will be able
 to use this equational reasoning in more contexts than just arithmetic.
 
 A Haskell module is a list of definitions
@@ -168,18 +171,18 @@ just at the top level.
 -- >>> (31 :: Integer) * (42 + 56)
 
 {-
-It is good style to annotate the type of *every* declaration in a Haskell
+It is good style to annotate the type of *every* top-level declaration in a Haskell
 program. This helps with error messages, as Haskell operators, like `*`, and
-constants like '31', are often overloaded.
+constants like '31', are overloaded.
 
 Elements of Haskell
 -------------------
 
 So far, we have have seen the following three properties of Haskell:
 
-* Haskell code is based on *expressions*
-* Expressions evaluate to *values*
-* Every expression has a *type*, which may influence evaluation
+\* Haskell code is based on *expressions*
+\* Expressions evaluate to *values*, which are equal to expressions
+\* Every expression has a *type*, which may influence evaluation
 
 You are probably familiar with expressions in other programming languages,
 where they are often used to compute numeric and boolean values. Haskell also
@@ -377,7 +380,7 @@ functions. Instead, expressions are only evaluated when they are needed.
 
 We can observe this behavior in Haskell by seeing what happens when we use
 `error` in a subexpresion. The `error` keyword in Haskell triggers a
-*non-recoverable* runtime exception, aborting any computation in progress.
+\*non-recoverable* runtime exception, aborting any computation in progress.
 It is not a good idea to use `error` in production code, but it is convenient
 for incremental development and for learning about how Haskell evaluation works.
 An `error` can be used in any context and can be given
@@ -396,19 +399,21 @@ the non-selected part of an if-expression...
 -}
 
 -- >>> if 1 < 3 then 5 else error "Unreachable"
+-- 5
 
 {-
 ..or that was short-circuited when evaluating a boolean expression.
 -}
 
 -- >>> True || error "Unreachable"
+-- True
 
 {-
 In contrast, you can see that if the first argument were `False` instead,
 it does not short circuit and does trigger the error.
 -}
 
--- >>> False || error "Ooops!"
+-- >>> False || error "Here!"
 
 {-
 In most languages, `if` and `||` are defined via special constructs because they
@@ -467,16 +472,16 @@ Making Haskell DO something
 
 Programs often interact with the world:
 
-* Read files
-* Display graphics
-* Broadcast packets
-* Run test cases and print success or failure
+\* Read files
+\* Display graphics
+\* Broadcast packets
+\* Run test cases and print success or failure
 
 They don't *just* compute values.
 
 How does this fit with values & equalities above?
 
-Note, we've gotten far without doing any I/O. That's fairly standard in
+We've gotten pretty far without doing any I/O. That's fairly standard in
 Haskell. Working with VSCode means that we can see the answers directly, we
 don't need an action to print them out. However, a standalone executable needs
 to do *something*, so we demonstrate that next.
@@ -535,14 +540,14 @@ to stdout.
 
 Because `putStr` doesn't evaluate to a value that we can print, we can't play with
 it using the IDE. Even if you hit `Evaluate...` you will see nothing because the
-IDE hides the printing action and only displays the value.
+IDE hides the printing action.
 -}
 
 -- >>> putStr "Say what?"
 
 {-
-Instead, to observe the printing action, we need to use GHCi. Let's give it
-name first:
+Instead, to observe the printing action, we need to use GHCi. Let's give this action
+a name first:
 -}
 
 hw :: IO ()
@@ -586,6 +591,10 @@ many' = do
   putStr "\n"
 
 {-
+Observe that we are taking advantage of laziness when we construct these actions.
+The `many` action does some printing, but that printing doesn't happen when when
+we define `many` --- only later when we run it in ghci.
+
 Example: Input Action
 ---------------------
 
@@ -660,16 +669,16 @@ import Test.HUnit`) before you can access these definitions.  This library
 defines a `Test` type for test cases.
 -}
 
+-- | A test case that, when run, checks that the result of computation
+-- matches the expected value 3
 t1 :: Test
 t1 = (1 + 2 :: Int) ~?= 3
 
--- check that the result of the computation matches the expected value `3`
-
 {-
-* Haskell is lazy by default, so these definitions *create* tests, but don't
+\* Haskell is lazy by default, so these definitions *create* tests, but don't
 actually run them yet. We'll do that below.
 
-* The `(~?=)` operator is overloaded. You can create tests that compare
+\* The `(~?=)` operator is overloaded. You can create tests that compare
 expressions at many different types. When the expressions themselves are also
 overloaded (such as those with numbers), we run into ambiguity---what type of
 expressions should this test actually use? We resolve that ambiguity with
@@ -691,7 +700,7 @@ assertion, for example `True ~?= False`. An erroroneous testcase is one that
 produced a run-time error, such as division by zero.
 
 Although we can evaluate `numTest` in the IDE, we get more information about
-failing and erroroneous tests using ghci.
+failing and erroroneous tests using `ghci`.
 
           *Basics> runTestTT (True ~?= False)
           ### Failure:
@@ -734,7 +743,7 @@ tup3 = ((7, 5.2), True)
 There can be any number of elements in a tuple, but the structure must match
 the type.
 
-*Pattern Matching* extracts values from tuples.
+\*Pattern Matching* extracts values from tuples.
 
 A function that takes a tuple as an argument *looks* like it has multiple
 arguments, but in reality, it has just one. We use a *pattern* to name the
@@ -882,7 +891,7 @@ jn (Just Nothing) = Nothing
 jn Nothing = Nothing
 
 {-
-**Quiz**: See if you can come up with a slightly simpler way to write `jn` using two
+\**Quiz**: See if you can come up with a slightly simpler way to write `jn` using two
 patterns instead of three. The `undefined` expression is one that produces a run-time
 error if it is ever evaluated.
 -}
@@ -940,7 +949,7 @@ l6 :: [a]
 l6 = []
 
 {-
-*Note*: `String` is just another name for a list of characters (`[Char]`).
+\*Note*: `String` is just another name for a list of characters (`[Char]`).
 -}
 
 l7 :: String
@@ -1045,10 +1054,10 @@ are the same list.
 Function practice: List Generation
 ----------------------------------
 
-**Example**: Write a function that, given an argument `x` and a number `n`, returns
+\**Example**: Write a function that, given an argument `x` and a number `n`, returns
 a list containing `n` copies of `x`.
 
-**Step 1**: Write test cases for the function.
+\**Step 1**: Write test cases for the function.
 
 We're using HUnit, a library for defining unit tests in Haskell and using the
 `~?=` operator to construct unit `Test`s by comparing the computed result
@@ -1062,7 +1071,7 @@ testClone3 = clone (1.1 :: Double) 3 ~?= [1.1, 1.1, 1.1]
 testClone4 = clone 'a' (-1) ~?= []
 
 {-
-**Step 2**: Declare the type of the function.
+\**Step 2**: Declare the type of the function.
 
 This function replicates any type of value, so the type of the first argument
 is polymorphic.
@@ -1070,15 +1079,15 @@ is polymorphic.
 
 clone :: a -> Int -> [a]
 {-
-**Step 3**: Implement the function.
+\**Step 3**: Implement the function.
 
 We implement this function by recursion on the integer argument.
 -}
 
-clone x n = if n <= 0 then [] else x : clone x (n -1)
+clone x n = if n <= 0 then [] else x : clone x (n - 1)
 
 {-
-**Step 4**: Run the tests.
+\**Step 4**: Run the tests.
 
 The HUnit function `runTestTT` actually runs a given unit test and prints
 its result to the standard output stream. (That is why its result type is `IO
@@ -1108,11 +1117,11 @@ You can run the tests by evaluating the definition `cls` at the ghci prompt.
 Function practice
 -----------------
 
-**Quiz**: Define a function called `range` that, given two integers `i` and `j`,
+\**Quiz**: Define a function called `range` that, given two integers `i` and `j`,
 returns a list containing all of the numbers at least as big as `i` but no
 bigger than `j`, in order.
 
-**Step 1**: Write test cases. We can define multiple test cases at once using a list.
+\**Step 1**: Write test cases. We can define multiple test cases at once using a list.
 -}
 
 testRange :: Test
@@ -1124,18 +1133,18 @@ testRange =
     ]
 
 {-
-**Step 2**: Declare the type of the function.
+\**Step 2**: Declare the type of the function.
 -}
 
 range :: Int -> Int -> [Int]
 {-
-**Step 3**: Define the function. This part is for you to do for your quiz.
+\**Step 3**: Define the function. This part is for you to do for your quiz.
 -}
 
 range i j = undefined
 
 {-
-**Step 4**: Run the tests.
+\**Step 4**: Run the tests.
 -}
 
 runRTests :: IO Counts
@@ -1225,10 +1234,10 @@ isGreeting3 s =
 Function practice: List Recursion
 ------------------------------
 
-**Example*: Define a function called `listSum` that, given a list of `Int`s returns
+\**Example*: Define a function called `listSum` that, given a list of `Int`s returns
 their sum.
 
-**Step 1**: Write test cases.
+\**Step 1**: Write test cases.
 -}
 
 sumTests :: Test
@@ -1239,12 +1248,12 @@ sumTests =
     ]
 
 {-
-**Step 2**: Declare the type of the function.
+\**Step 2**: Declare the type of the function.
 -}
 
 sum :: [Int] -> Int
 {-
-**Step 3**: Define the function. (Use pattern matching to define the function by
+\**Step 3**: Define the function. (Use pattern matching to define the function by
 case analysis.)
 -}
 
@@ -1252,7 +1261,7 @@ sum [] = 0
 sum (x : xs) = x + sum xs
 
 {-
-**Step 4**: Run the tests.
+\**Step 4**: Run the tests.
 -}
 
 runSumTests :: IO Counts
@@ -1283,7 +1292,7 @@ Define a function, called `take`, that, given a number n and a list,
 returns the first n items in the list, or the whole list if there are
 fewer than n items.
 
-**Step 1**: Write test cases.
+\**Step 1**: Write test cases.
 -}
 
 takeTests :: Test
@@ -1294,13 +1303,13 @@ takeTests =
     ]
 
 {-
-**Step 2**: Declare the type of the function. This function
+\**Step 2**: Declare the type of the function. This function
 is polymorphic and works with any element type.
 -}
 
 take :: Int -> [a] -> [a]
 {-
-**Step 3**: Define the function.
+\**Step 3**: Define the function.
 -}
 
 take 0 xs = []
@@ -1308,7 +1317,7 @@ take n [] = []
 take n (x : xs) = x : take (n - 1) xs
 
 {-
-**Step 4**: Run the tests.
+\**Step 4**: Run the tests.
 -}
 
 runTakeTests :: IO Counts
@@ -1321,7 +1330,7 @@ Function practice: List transformation
 Define a function, called `listIncr`, that, given a list of ints,
 returns a new list where each number has been incremented.
 
-**Step 1**: Write test cases.
+\**Step 1**: Write test cases.
 -}
 
 listIncrTests :: Test
@@ -1332,18 +1341,18 @@ listIncrTests =
     ]
 
 {-
-**Step 2**: Declare the type of the function.
+\**Step 2**: Declare the type of the function.
 -}
 
 listIncr :: [Int] -> [Int]
 {-
-**Step 3**: Define the function.
+\**Step 3**: Define the function.
 -}
 
 listIncr = undefined
 
 {-
-**Step 4**: Run the tests.
+\**Step 4**: Run the tests.
 -}
 
 runLITests :: IO Counts
@@ -1356,7 +1365,7 @@ Function practice: Double List transformation
 Define a function, called `listAdd`, that, given two lists of
 numbers, adds them together pointwise. Any extra numbers are ignored.
 
-**Step 1**: Write test cases.
+\**Step 1**: Write test cases.
 -}
 
 listAddTests :: Test
@@ -1367,18 +1376,18 @@ listAddTests =
     ]
 
 {-
-**Step 2**: Declare the type of the function.
+\**Step 2**: Declare the type of the function.
 -}
 
 listAdd :: [Int] -> [Int] -> [Int]
 {-
-**Step 3**: Define the function.
+\**Step 3**: Define the function.
 -}
 
 listAdd = undefined
 
 {-
-**Step 4**: Run the tests.
+\**Step 4**: Run the tests.
 -}
 
 runLAddTests :: IO Counts
@@ -1388,8 +1397,8 @@ runLAddTests = runTestTT listAddTests
 -- Counts {cases = 2, tried = 2, errors = 0, failures = 0}
 
 {-
-Function practice: "Infinite" lists
------------------------------------
+Coda: "Infinite" lists
+----------------------
 
 The `:` operator is lazy in Haskell. When we create a list we don't need to
 know the value of all of the elements.
@@ -1448,57 +1457,7 @@ fibs = 1 : 1 : listAdd fibs (tail fibs)
 -- [1,1,2,3,5,8,13,21,34,55,89,144,233,377,610,987,1597]
 
 {-
-How do you reason about definitions such as `fibs` above? The
-technique that we've seen above, replacing equal subterms by equal
-subterms works!
-
-```
-fibs = -- definition above
-      1 : 1 : listAdd fibs (tail fibs)
-       -- name a subexpression
-     == 1 : 1 : l1
-        where l1 = listAdd fibs (tail fibs)
-                    -- unfold definition of fibs (twice) to simplify this subexpression
-                 == listAdd (1 : 1 : listAdd fibs (tail fibs)) (tail (1 : 1 : listAdd fibs (tail fibs)))
-                    -- replace `tail` with its definition
-                 == listAdd (1 : 1 : listAdd fibs (tail fibs)) (1 : listAdd fibs (tail fibs))
-                    -- replace `listAdd` with its definition, in the case of nonempty lists
-                 == 1 + 1 : listAdd (1 : listAdd fibs (tail fibs)) (listAdd fibs (tail fibs))
-                    -- add numbers, replace subterms equivalent to l1
-                 == 2 : listAdd (1 : l1) l1
-       -- replace l1 with simpler version
-     == 1 : 1 : 2 : listAdd (1 : l1) l1
-       -- name a new subexpression
-     == 1 : 1 : 2 : l2
-        where l2 = listAdd (1 : l1) l1
-                    -- unfold definition of l1
-                 == listAdd (1 : l1) (2 : listAdd (1 : l1) l1)
-                    -- replace `listAdd` with its definition
-                 == 1 + 2 : listAdd l1 (listAdd (1 : l1) l1)
-                    -- add numbers, replace subterm equivalent to l2
-                 == 3 : listAdd l1 l2
-       -- replace l2 with simpler version
-     == 1 : 1 : 2 : 3 : listAdd l1 l2
-       -- name a subexpression, etc
-     == 1 : 1 : 2 : 3 : l3
-        where l3 = listAdd l1 l2
-                 == listAdd (2 : listAdd (1 : l1) l1) (3 : listAdd l1 l2)
-                 == 2 + 3 : listAdd (listAdd (1 : l1) l1) (listAdd l1 l2)
-                 == 5 : l2 + l3
-     == 1 : 1 : 2 : 3 : 5 : l2 + l3
-```
-
-In the equations above, we are only just replacing subterms by equal
-subterms. However, if we do this carefully, we can see what the values
-of the list will be, if we ever need them for some computation.
-
-More generally, because of laziness, our code is more modular. We have separated the
-generation of the sequence of numbers from deciding just how
-many of those numbers that we need. We don't compute all of the numbers
-when we define this series --- we only compute them as we need them. This is
-a powerful idea which will re-occur throughout the semester.
-
 ----------------------------------------------
-For Penn students: There is a quiz associated with this module on Canvas. Please complete this quiz before the next class.
+For Penn students: There is a quiz associated with this module. Please complete it before the next class.
 
 -}
